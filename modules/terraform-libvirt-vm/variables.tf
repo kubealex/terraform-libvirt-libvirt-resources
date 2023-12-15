@@ -16,6 +16,12 @@ variable "instance_iso_image" {
   default = ""
 }
 
+variable "instance_additional_disk_size" {
+  type = number
+  description = "Additional block device size"
+  default = 0
+}
+
 variable "instance_cloudinit_path" {
   type = string
   description = "cloud-init config to use for instance provisioning"
