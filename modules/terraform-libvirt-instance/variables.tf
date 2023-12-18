@@ -16,7 +16,7 @@ variable "instance_iso_image" {
   default = ""
 }
 
-variable "instance_additional_disk_size" {
+variable "instance_additional_volume_size" {
   type = number
   description = "Additional block device size"
   default = 0
@@ -78,13 +78,13 @@ variable "instance_cloud_user" {
   }
 }
 
-variable "libvirt_network" {
+variable "instance_libvirt_network" {
   type = string
   description = "The libvirt network to attach the instance to"
   default = "default"
 }
 
-variable "libvirt_pool" {
+variable "instance_libvirt_pool" {
   type = string
   description = "The libvirt pool to attach the instance to"
   default = "default"
@@ -94,4 +94,17 @@ variable "instance_uefi_enabled" {
   type = bool
   default = true
   description = "Set this to true if OS should be installed via ISO"
+}
+
+variable "instance_network_interfaces" {
+  type = list(object({
+    interface_name = string
+    interface_mac_address = string
+    interface_addresses = list(string)
+    interface_hostname = string
+    interface_wait_for_lease = bool
+  })
+  )
+  default = []
+  description = "A list of network interfaces to add to the instance"
 }

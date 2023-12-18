@@ -2,7 +2,7 @@
 resource "libvirt_volume" "os_image" {
   count = var.instance_cloud_image != "" ? var.instance_count : 0
   name = "${var.instance_hostname}-${count.index}-os_image"
-  pool = var.libvirt_pool
+  pool = var.instance_libvirt_pool
   source = var.instance_cloud_image
   format = "qcow2"
 }
@@ -11,7 +11,7 @@ resource "libvirt_volume" "os_disk" {
   count = var.instance_count
   name = "${var.instance_hostname}-${count.index}"
   base_volume_id = var.instance_cloud_image != "" ? element(libvirt_volume.os_image.*.id, count.index) : ""
-  pool = var.libvirt_pool
+  pool = var.instance_libvirt_pool
   size = var.instance_volume_size*1073741824
 }
 
@@ -19,16 +19,16 @@ resource "libvirt_volume" "os_disk" {
 resource "libvirt_cloudinit_disk" "commoninit" {
   count = var.instance_cloud_image != "" && var.instance_type == "linux" ? var.instance_count : 0
   name = "${var.instance_hostname}-${count.index}-commoninit.iso"
-  pool = var.libvirt_pool
+  pool = var.instance_libvirt_pool
   user_data = element(data.template_file.user_data.*.rendered, count.index)
   #meta_data = data.template_file.meta_data.rendered
 }
 
 resource "libvirt_volume" "storage_image" {
-  count = var.instance_additional_disk_size != 0 ? var.instance_count : 0
+  count = var.instance_additional_volume_size != 0 ? var.instance_count : 0
   name = "${var.instance_hostname}-storage_image-${count.index}"
-  pool = var.libvirt_pool
-  size = var.instance_additional_disk_size*1073741824
+  pool = var.instance_libvirt_pool
+  size = var.instance_additional_volume_size*1073741824
   format = "qcow2"
 }
 
@@ -73,23 +73,27 @@ resource "libvirt_domain" "service-vm" {
   }
 
   dynamic "disk" {
-     for_each = var.instance_additional_disk_size != 0 ? { storage = true } : {}
+     for_each = var.instance_additional_volume_size != 0 ? { storage = true } : {}
      content {
      volume_id = libvirt_volume.storage_image[count.index].id
      }
    }
 
   network_interface {
-       network_name = var.libvirt_network
+       network_name = var.instance_libvirt_network
        wait_for_lease = true
   }
 
-  # dynamic "network_interface" {
-  #    for_each = tobool(lower(var.vm_additional_nic)) ? { nic = true } : {}
-  #    content {
-  #      network_name = var.vm_additional_nic_network
-  #    }
-  #    }
+  dynamic "network_interface" {
+    for_each = var.instance_network_interfaces
+     content {
+       network_name = network_interface.value.interface_name
+       hostname = network_interface.value.interface_hostname
+       addresses = network_interface.value.interface_addresses
+       mac = network_interface.value.interface_mac_address
+       wait_for_lease = network_interface.value.interface_wait_for_lease
+     }
+  }
 
   cloudinit = var.instance_cloud_image != "" && var.instance_type == "linux" ? element(libvirt_cloudinit_disk.commoninit.*.id, count.index) : null
 
