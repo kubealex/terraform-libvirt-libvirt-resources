@@ -1,5 +1,3 @@
-## Example invocation
-
 module "libvirt_network" {
   source                       = "github.com/kubealex/terraform-libvirt//modules/terraform-libvirt-network"
   network_autostart    = true
