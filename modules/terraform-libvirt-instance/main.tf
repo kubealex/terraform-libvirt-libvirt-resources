@@ -50,7 +50,7 @@ resource "libvirt_domain" "service-vm" {
   name = var.instance_count > 1 ? "${var.instance_hostname}-${count.index}" : var.instance_hostname
   memory = var.instance_memory*1024
   vcpu = var.instance_cpu
-  machine = var.instance_uefi_enabled ? "q35" : "pc-i440fx-rhel7.6.0"
+  machine = var.instance_uefi_enabled ? "q35" : "pc-i440fx"
   firmware = var.instance_uefi_enabled ? "/usr/share/edk2/ovmf/OVMF_CODE.fd" : ""
 
   boot_device {
