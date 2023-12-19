@@ -13,7 +13,7 @@ resource "libvirt_network" "vm_network" {
 
     dynamic "hosts" {
       for_each = concat(
-        data.network_dns_host_template.hosts.*.rendered
+        data.libvirt_network_dns_host_template.hosts.*.rendered
       )
       content {
         hostname = hosts.value.hostname
@@ -26,7 +26,7 @@ resource "libvirt_network" "vm_network" {
   dnsmasq_options {
     dynamic "options" {
       for_each = concat(
-        data.network_dnsmasq_options_template.options.*.rendered,
+        data.libvirt_network_dnsmasq_options_template.options.*.rendered,
       )
       content {
         option_name  = options.value.option_name

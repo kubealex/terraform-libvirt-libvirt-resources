@@ -37,7 +37,7 @@ This Terraform module provisions virtual instances with customizable configurati
 
 | Sub-Variable                 | Description                                        | Required | Default Value |
 | ---------------------------- | -------------------------------------------------- | -------- | ------------- |
-| `interface_network_name`             | Name of the network to attach the interface to                      | ✔️       |               |
+| `interface_network`             | Name of the network to attach the interface to                      | ✔️       |               |
 | `interface_mac_address`     | MAC address of the network interface               | ❌       |               |
 | `interface_addresses`       | List of IP addresses for the network interface    | ❌       | `[]` (empty list) |
 | `interface_hostname`        | Hostname for the network interface                | ❌       |               |

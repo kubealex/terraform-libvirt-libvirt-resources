@@ -98,7 +98,7 @@ variable "instance_uefi_enabled" {
 
 variable "instance_network_interfaces" {
   type = list(object({
-    interface_name = string
+    interface_network = string
     interface_mac_address = string
     interface_addresses = list(string)
     interface_hostname = string

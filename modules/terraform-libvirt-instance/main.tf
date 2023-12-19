@@ -87,7 +87,7 @@ resource "libvirt_domain" "service-vm" {
   dynamic "network_interface" {
     for_each = var.instance_network_interfaces
      content {
-       network_name = network_interface.value.interface_name
+       network_name = network_interface.value.interface_network
        hostname = network_interface.value.interface_hostname
        addresses = network_interface.value.interface_addresses
        mac = network_interface.value.interface_mac_address
