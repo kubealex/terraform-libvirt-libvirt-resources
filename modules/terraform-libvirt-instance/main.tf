@@ -44,7 +44,6 @@ data "template_file" "user_data" {
   }
 }
 
-# Create the machine
 resource "libvirt_domain" "service-vm" {
   count = var.instance_count
   name = var.instance_count > 1 ? "${var.instance_hostname}-${count.index}" : var.instance_hostname
@@ -107,6 +106,13 @@ resource "libvirt_domain" "service-vm" {
     type = "vnc"
     listen_type = "address"
     autoport = "true"
+  }
+
+  # necessary when using UEFI
+  lifecycle {
+    ignore_changes = [
+      nvram
+    ]
   }
 
   xml {
