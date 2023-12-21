@@ -18,7 +18,7 @@ These are minimal examples, the full examples are available in the [examples](./
 module "libvirt_network" {
   source                       = "github.com/kubealex/terraform-libvirt//modules/terraform-libvirt-network"
   network_autostart    = true
-  network              = "example_network"
+  network_name         = "example_network"
   network_mode         = "nat"
   network_domain       = "example.com"
   network_cidr         = ["192.168.122.0/24"]
