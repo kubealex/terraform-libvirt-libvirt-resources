@@ -1,6 +1,7 @@
 variable "pool_name" {
   description = "Name of the libvirt pool"
   type        = string
+  default     = "default"
 }
 
 variable "pool_path" {

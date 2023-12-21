@@ -7,6 +7,7 @@ variable "network_autostart" {
 variable "network_name" {
   description = "Name of the libvirt network"
   type        = string
+  default     = "default"
 }
 
 variable "network_mode" {

@@ -8,7 +8,7 @@ This Terraform module creates a libvirt pool with customizable configurations.
 
 | Variable Name  | Description                        | Required | Default Value              |
 | -------------- | ---------------------------------- | -------- | -------------------------- |
-| `pool_name`    | Name of the libvirt pool            | ✔️       |                            |
+| `pool_name`    | Name of the libvirt pool            | ❌       |                            |
 | `pool_path`    | Path for the libvirt pool           | ❌       | `/var/lib/libvirt/images`  |
 
 ℹ️ Icons: ✔️ - Required, ❌ - Optional
