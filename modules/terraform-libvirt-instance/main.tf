@@ -53,7 +53,7 @@ resource "libvirt_domain" "service-vm" {
   firmware = var.instance_uefi_enabled ? "/usr/share/edk2/ovmf/OVMF_CODE.fd" : ""
 
   boot_device {
-    dev = [ "hd", "cdrom" ]
+    dev = [ "hd", "cdrom", "network" ]
   }
 
   cpu {
