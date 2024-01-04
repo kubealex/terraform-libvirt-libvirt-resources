@@ -4,6 +4,12 @@ variable "instance_count" {
   description = "Number of instances to create"
 }
 
+variable "instance_autostart" {
+  type = bool
+  description = "Flag to configure autostart for the instance"
+  default = true
+}
+
 variable "instance_cloud_image" {
   type = string
   description = "Cloud image to use for instance provisioning"

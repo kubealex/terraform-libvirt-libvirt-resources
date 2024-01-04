@@ -10,6 +10,7 @@ This Terraform module provisions virtual instances with customizable configurati
 | ------------------------------ | -------------------------------------------------- | -------- | ------------------------ |
 | `instance_count`               | Number of instances to create                      | ❌       | `1`                      |
 | `instance_cloud_image`         | Cloud image to use for instance provisioning      | ❌       |                          |
+| `instance_autostart`         | Flag to set instance autostart      | ❌       | true                         |
 | `instance_iso_image`           | ISO to use for instance provisioning              | ❌       |                          |
 | `instance_additional_volume_size` | Additional block device size                    | ❌       | `0`                      |
 | `instance_cloudinit_path`      | Cloud-init config to use for instance provisioning | ❌       | `./cloud_init.cfg`       |

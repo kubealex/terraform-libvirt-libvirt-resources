@@ -2,6 +2,7 @@ module "instance_provisioning" {
   source  = "kubealex/libvirt-resources/libvirt//modules/terraform-libvirt-pool"
   version = "0.0.1"
   instance_count            = 2
+  instance_autostart        = true
   instance_cloud_image      = "https://download.fedoraproject.org/pub/fedora/linux/releases/39/Cloud/x86_64/images/Fedora-Cloud-Base-39-1.5.x86_64.qcow2"
   instance_type             = "linux"
   instance_hostname         = "web-server"
