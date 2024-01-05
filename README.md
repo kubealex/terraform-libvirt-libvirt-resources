@@ -69,6 +69,7 @@ module "instance_provisioning" {
   instance_libvirt_network   = "default"
   instance_libvirt_pool      = "default"
   instance_uefi_enabled      = true
+  instance_firmware          = "/usr/share/edk2/ovmf/OVMF_CODE.fd"
   instance_network_interfaces = [
     {
       interface_network_name           = "default"

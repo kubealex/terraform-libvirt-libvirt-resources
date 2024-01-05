@@ -51,7 +51,7 @@ resource "libvirt_domain" "service-vm" {
   memory = var.instance_memory*1024
   vcpu = var.instance_cpu
   machine = var.instance_uefi_enabled ? "q35" : ""
-  firmware = var.instance_uefi_enabled ? "/usr/share/edk2/ovmf/OVMF_CODE.fd" : ""
+  firmware = var.instance_uefi_enabled ? var.instance_firmware : ""
 
   boot_device {
     dev = [ "hd", "cdrom", "network" ]

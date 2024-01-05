@@ -102,6 +102,13 @@ variable "instance_uefi_enabled" {
   description = "Set this to true if OS should be installed via ISO"
 }
 
+
+variable "instance_firmware" {
+  type = string
+  default = "/usr/share/edk2/ovmf/OVMF_CODE.fd"
+  description = "Path to the ovmf firmware on the host machine. Ubuntu=/usr/share/OVMF/OVMF_CODE.fd"
+}
+
 variable "instance_network_interfaces" {
   type = list(object({
     interface_network = string
