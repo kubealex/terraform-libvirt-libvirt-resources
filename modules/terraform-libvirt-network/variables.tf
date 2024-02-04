@@ -40,16 +40,34 @@ variable "network_mtu" {
   default = null
 }
 
+variable "network_dns_enabled" {
+  description = "Whether DNS is enabled for the libvirt network"
+  type        = bool
+  default     = false
+}
+
+variable "network_dns_local" {
+  description = "Whether DNS is local-only for the libvirt network"
+  type        = bool
+  default     = false
+}
+
 variable "network_dhcp_enabled" {
   description = "Whether DHCP is enabled for the libvirt network"
   type        = bool
   default     = false
 }
 
-variable "network_dhcp_local" {
-  description = "Whether DHCP is local-only for the libvirt network"
-  type        = bool
-  default     = false
+variable "network_dhcp_range_start" {
+  description = "DHCP range start"
+  type        = string
+  default     = null
+}
+
+variable "network_dhcp_range_end" {
+  description = "DHCP range end"
+  type        = string
+  default     = null
 }
 
 variable "network_dnsmasq_options" {
