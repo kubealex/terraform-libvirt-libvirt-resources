@@ -8,8 +8,8 @@ resource "libvirt_network" "vm_network" {
   mtu = var.network_mtu
 
   dns {
-    enabled = var.network_dhcp_enabled
-    local_only = var.network_dhcp_local
+    enabled = var.network_dns_enabled
+    local_only = var.network_dns_local
 
     dynamic "hosts" {
       for_each = concat(
@@ -20,7 +20,10 @@ resource "libvirt_network" "vm_network" {
         ip       = hosts.value.ip
       }
     }
+  }
 
+  dhcp {
+    enabled = var.network_dhcp_enabled
   }
 
   dnsmasq_options {
@@ -35,7 +38,6 @@ resource "libvirt_network" "vm_network" {
     }
   }
 
-
   dynamic "routes" {
       for_each = var.network_routes
       content {
@@ -44,6 +46,12 @@ resource "libvirt_network" "vm_network" {
       }
   }
 
+  xml {
+    xslt = var.network_dhcp_range_start != null && var.network_dhcp_range_start != null ? templatefile("${path.module}/templates/dhcp-range-patch.xslt", {
+        network_dhcp_range_start = var.network_dhcp_range_start
+        network_dhcp_range_end   = var.network_dhcp_range_end
+      }) : null
+  }
 }
 
 data "libvirt_network_dnsmasq_options_template" "options" {
