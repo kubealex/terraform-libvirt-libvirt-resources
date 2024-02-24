@@ -79,11 +79,6 @@ resource "libvirt_domain" "service-vm" {
      }
    }
 
-  network_interface {
-       network_name = var.instance_libvirt_network
-       wait_for_lease = true
-  }
-
   dynamic "network_interface" {
     for_each = var.instance_network_interfaces
      content {

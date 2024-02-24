@@ -84,12 +84,6 @@ variable "instance_cloud_user" {
   }
 }
 
-variable "instance_libvirt_network" {
-  type = string
-  description = "The libvirt network to attach the instance to"
-  default = "default"
-}
-
 variable "instance_libvirt_pool" {
   type = string
   description = "The libvirt pool to attach the instance to"
@@ -112,12 +106,15 @@ variable "instance_firmware" {
 variable "instance_network_interfaces" {
   type = list(object({
     interface_network = string
-    interface_mac_address = string
-    interface_addresses = list(string)
-    interface_hostname = string
-    interface_wait_for_lease = bool
+    interface_mac_address = optional(string)
+    interface_addresses = optional(list(string), [])
+    interface_hostname = optional(string)
+    interface_wait_for_lease = optional(bool, true)
   })
   )
-  default = []
+  default = [{
+    interface_network = "default"
+    }
+  ]
   description = "A list of network interfaces to add to the instance"
 }

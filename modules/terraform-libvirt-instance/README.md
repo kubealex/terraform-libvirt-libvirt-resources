@@ -21,7 +21,6 @@ This Terraform module provisions virtual instances with customizable configurati
 | `instance_memory`              | Instance memory size, in GB                       | ❌       | `4`                      |
 | `instance_volume_size`         | Main volume size, in GB                       | ❌       | `20`                     |
 | `instance_cloud_user`          | Cloud user credentials                             | ❌       | See default in table     |
-| `instance_libvirt_network`     | The libvirt network to attach the instance to     | ❌       | `default`                |
 | `instance_libvirt_pool`        | The libvirt pool to attach the instance to        | ❌       | `default`                |
 | `instance_uefi_enabled`        | Set this to true if OS should be installed via ISO| ❌       | `true`                   |
 | `instance_network_interfaces`  | A list of network interfaces to add to the instance| ❌       | `[]` (empty list)        |
@@ -62,7 +61,6 @@ module "instance_provisioning" {
     password = "securepass"
     sshkey   = "ssh-rsa AAAAB3NzaC1yc2EAAA...your-ssh-key-here"
   }
-  instance_libvirt_network   = "internal"
   instance_libvirt_pool      = "ssd-pool"
   instance_uefi_enabled      = true
   instance_network_interfaces = [
