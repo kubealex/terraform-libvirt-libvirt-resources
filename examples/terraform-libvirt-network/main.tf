@@ -1,5 +1,5 @@
 module "libvirt_network" {
-  source  = "kubealex/libvirt-resources/libvirt//modules/terraform-libvirt-pool"
+  source  = "kubealex/libvirt-resources/libvirt//modules/terraform-libvirt-network"
   network_autostart         = true
   network_name              = "example_network"
   network_mode              = "nat"

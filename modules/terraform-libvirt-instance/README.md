@@ -47,7 +47,7 @@ This Terraform module provisions virtual instances with customizable configurati
 
 ```hcl
 module "instance_provisioning" {
-  source                    = "github.com/example/instance-provisioning"
+  source                    = "kubealex/libvirt-resources/libvirt//modules/terraform-libvirt-instance"
   instance_count            = 2
   instance_cloud_image      = "ubuntu:latest"
   instance_type             = "linux"
