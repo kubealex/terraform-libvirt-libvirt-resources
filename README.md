@@ -24,8 +24,10 @@ module "libvirt_network" {
   network_cidr         = ["192.168.122.0/24"]
   network_bridge       = "br0"
   network_mtu          = 1500
+  network_dns_local   = false
   network_dhcp_enabled = true
-  network_dhcp_local   = false
+  network_dhcp_range_start = "192.168.122.15"
+  network_dhcp_range_end = "192.168.122.50"
   network_dnsmasq_options = {
     "server" = "/example.com/192.168.122.1"
   }
@@ -35,6 +37,26 @@ module "libvirt_network" {
   network_routes = {
     "10.0.0.0/24" = "10.0.0.1"
   }
+  network_dns_srv_records = [
+    {
+      service  = "_http"
+      protocol = "_tcp"
+      domain   = "example.com"
+      target   = "server1.example.com"
+      port     = "80"
+      priority = "10"
+      weight   = "5"
+    },
+    {
+      service  = "_ldap"
+      protocol = "_tcp"
+      domain   = "example.com"
+      target   = "server2.example.com"
+      port     = "389"
+      priority = "20"
+      weight   = "10"
+    }
+  ]
 }
 ```
 

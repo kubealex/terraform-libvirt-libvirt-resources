@@ -21,4 +21,24 @@ module "libvirt_network" {
   network_routes            = {
     "10.0.0.0/24" = "10.0.0.1"
   }
+  network_dns_srv_records = [
+    {
+      service  = "_http"
+      protocol = "_tcp"
+      domain   = "example.com"
+      target   = "server1.example.com"
+      port     = "80"
+      priority = "10"
+      weight   = "5"
+    },
+    {
+      service  = "_ldap"
+      protocol = "_tcp"
+      domain   = "example.com"
+      target   = "server2.example.com"
+      port     = "389"
+      priority = "20"
+      weight   = "10"
+    }
+  ]
 }

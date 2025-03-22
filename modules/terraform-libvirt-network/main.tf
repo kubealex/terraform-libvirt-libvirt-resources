@@ -20,6 +20,19 @@ resource "libvirt_network" "vm_network" {
         ip       = hosts.value.ip
       }
     }
+
+    dynamic "srvs" {
+      for_each = data.libvirt_network_dns_srv_template.srv_records.*.rendered
+      content {
+        service  = srvs.value["service"]
+        protocol = srvs.value["protocol"]
+        domain   = srvs.value["domain"]
+        target   = srvs.value["target"]
+        port     = srvs.value["port"]
+        priority = srvs.value["priority"]
+        weight   = srvs.value["weight"]
+      }
+    }
   }
 
   dhcp {
@@ -64,4 +77,15 @@ data "libvirt_network_dns_host_template" "hosts" {
     count = length(var.network_dns_entries)
     hostname = keys(var.network_dns_entries)[count.index]
     ip = values(var.network_dns_entries)[count.index]
+}
+
+data "libvirt_network_dns_srv_template" "srv_records" {
+  count    = length(var.network_dns_srv_records)
+  service  = values(var.network_dns_srv_records)[count.index].service
+  protocol = values(var.network_dns_srv_records)[count.index].protocol
+  domain   = values(var.network_dns_srv_records)[count.index].domain
+  target   = values(var.network_dns_srv_records)[count.index].target
+  port     = values(var.network_dns_srv_records)[count.index].port
+  priority = values(var.network_dns_srv_records)[count.index].priority
+  weight   = values(var.network_dns_srv_records)[count.index].weight
 }

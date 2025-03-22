@@ -87,4 +87,16 @@ variable "network_routes" {
   type        = map(string)
   default = {}
 }
-
+variable "network_dns_srv_records" {
+  description = "Map of SRV records to add to libvirt network configuration"
+  type = list(object({
+    service  = string
+    protocol = string
+    domain   = string
+    target   = string
+    port     = string
+    priority = string
+    weight   = string
+  }))
+  default = []
+}
