@@ -107,7 +107,7 @@ variable "instance_network_interfaces" {
   type = list(object({
     interface_network = string
     interface_mac_address = optional(string)
-    interface_addresses = optional(list(string), [])
+    interface_addresses = optional(list(string))
     interface_hostname = optional(string)
     interface_wait_for_lease = optional(bool, true)
   })
