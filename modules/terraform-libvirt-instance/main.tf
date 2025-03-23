@@ -44,7 +44,7 @@ data "template_file" "user_data" {
   }
 }
 
-resource "libvirt_domain" "service-vm" {
+resource "libvirt_domain" "libvirt_instance" {
   count = var.instance_count
   autostart = var.instance_autostart
   name = var.instance_count > 1 ? "${var.instance_hostname}-${count.index}" : var.instance_hostname

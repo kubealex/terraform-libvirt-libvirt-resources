@@ -1,6 +1,6 @@
-output "instance_networks" {
+output "libvirt_instance" {
   value = [
-    for vm in libvirt_domain.service-vm : {
+    for vm in libvirt_domain.libvirt_instance : {
       name        = vm.name
       network_interfaces = [
         for ni in vm.network_interface : {
