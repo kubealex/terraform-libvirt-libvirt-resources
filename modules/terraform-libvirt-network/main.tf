@@ -80,12 +80,11 @@ data "libvirt_network_dns_host_template" "hosts" {
 }
 
 data "libvirt_network_dns_srv_template" "srv_records" {
-  count    = length(var.network_dns_srv_records)
-  service  = values(var.network_dns_srv_records)[count.index].service
-  protocol = values(var.network_dns_srv_records)[count.index].protocol
-  domain   = values(var.network_dns_srv_records)[count.index].domain
-  target   = values(var.network_dns_srv_records)[count.index].target
-  port     = values(var.network_dns_srv_records)[count.index].port
-  priority = values(var.network_dns_srv_records)[count.index].priority
-  weight   = values(var.network_dns_srv_records)[count.index].weight
+  service  = var.network_dns_srv_records[count.index].service
+  protocol = var.network_dns_srv_records[count.index].protocol
+  domain   = var.network_dns_srv_records[count.index].domain
+  target   = var.network_dns_srv_records[count.index].target
+  port     = var.network_dns_srv_records[count.index].port
+  priority = var.network_dns_srv_records[count.index].priority
+  weight   = var.network_dns_srv_records[count.index].weight
 }
