@@ -80,6 +80,8 @@ data "libvirt_network_dns_host_template" "hosts" {
 }
 
 data "libvirt_network_dns_srv_template" "srv_records" {
+  count    = length(var.network_dns_srv_records)
+
   service  = var.network_dns_srv_records[count.index].service
   protocol = var.network_dns_srv_records[count.index].protocol
   domain   = var.network_dns_srv_records[count.index].domain
