@@ -24,7 +24,7 @@ module "libvirt_network" {
   network_dns_srv_records = [
     {
       service  = "_http"
-      protocol = "_tcp"
+      protocol = "tcp"
       domain   = "example.com"
       target   = "server1.example.com"
       port     = "80"
@@ -33,7 +33,7 @@ module "libvirt_network" {
     },
     {
       service  = "_ldap"
-      protocol = "_tcp"
+      protocol = "tcp"
       domain   = "example.com"
       target   = "server2.example.com"
       port     = "389"
