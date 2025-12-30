@@ -46,7 +46,7 @@ variable "instance_type" {
 
 variable "instance_hostname" {
   type        = string
-  default     = "service-vm"
+  default     = "libvirt-vm"
   description = "Hostname to assign the instance via cloud-init"
 }
 

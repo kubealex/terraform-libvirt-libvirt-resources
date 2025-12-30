@@ -15,7 +15,7 @@ This Terraform module provisions virtual instances with customizable configurati
 | `instance_additional_volume_size` | Additional block device size                    | ❌       | `0`                      |
 | `instance_cloudinit_path`      | Cloud-init config to use for instance provisioning | ❌       | `./cloud_init.cfg`       |
 | `instance_type`                | Instance type, Windows/Linux                      | ❌       | `linux`                  |
-| `instance_hostname`            | Hostname to assign the instance via cloud-init     | ❌       | `service-vm`             |
+| `instance_hostname`            | Hostname to assign the instance via cloud-init     | ❌       | `libvirt-vm`             |
 | `instance_domain`              | Hostname to assign the instance via cloud-init     | ❌       | `example.com`            |
 | `instance_cpu`                 | Number of CPUs to configure for the instance      | ❌       | `2`                      |
 | `instance_memory`              | Instance memory size, in GB                       | ❌       | `4`                      |
@@ -47,36 +47,44 @@ This Terraform module provisions virtual instances with customizable configurati
 
 ```hcl
 module "instance_provisioning" {
-  source                    = "kubealex/libvirt-resources/libvirt//modules/terraform-libvirt-instance"
-  instance_count            = 2
-  instance_cloud_image      = "ubuntu:latest"
-  instance_type             = "linux"
-  instance_hostname         = "web-server"
-  instance_domain           = "example.com"
-  instance_cpu              = 4
-  instance_memory           = 8
-  instance_volume_size      = 50
+  source                       = "github.com/kubealex/terraform-libvirt//modules/terraform-libvirt-instance"
+  version                      = "0.1.3" # If you are using the version 0.8.x of the provider
+# version                      = "0.2"   # If you are using the version 0.9.x of the provider
+  instance_count               = 2
+  instance_cloud_image         = "https://download.fedoraproject.org/pub/fedora/linux/releases/39/Cloud/x86_64/images/Fedora-Cloud-Base-39-1.5.x86_64.qcow2"
+  instance_type                = "linux"
+  instance_hostname            = "web-server"
+  instance_domain              = "example.com"
+  instance_cpu                 = 2
+  instance_memory              = 4
+  instance_volume_size         = 50
+
   instance_cloud_user = {
-    username = "admin"
-    password = "securepass"
-    sshkey   = "ssh-rsa AAAAB3NzaC1yc2EAAA...your-ssh-key-here"
+    username                   = "admin"
+    password                   = "securepass"
+    sshkey                     = "ssh-rsa AAAAB3NzaC1yc2EAAA...your-ssh-key-here"
   }
-  instance_libvirt_pool      = "ssd-pool"
-  instance_uefi_enabled      = true
+
+  instance_libvirt_network     = "default"
+  instance_libvirt_pool        = "default"
+  instance_uefi_enabled        = true
+  instance_firmware            = "/usr/share/edk2/ovmf/OVMF_CODE.fd"
+
   instance_network_interfaces = [
     {
-      interface_network_name           = "internal"
-      interface_mac_address    = "52:54:00:12:34:56"
-      interface_addresses      = ["192.168.1.2"]
-      interface_hostname       = "eth0-host"
-      interface_wait_for_lease = true
+      interface_network_name    = "default"
+      interface_mac_address     = "52:54:00:12:34:56"
+      interface_addresses       = ["192.168.1.2"]
+      interface_hostname        = "eth0-host"
+      interface_wait_for_lease  = true
     },
     {
-      interface_network_name           = "internal"
-      interface_mac_address    = "52:54:00:65:78:9A"
-      interface_addresses      = ["192.168.2.2"]
-      interface_hostname       = "eth1-host"
-      interface_wait_for_lease = false
+      interface_network_name    = "default"
+      interface_mac_address     = "52:54:00:65:78:9A"
+      interface_addresses       = ["192.168.2.2"]
+      interface_hostname        = "eth1-host"
+      interface_wait_for_lease  = false
     },
   ]
 }
+```

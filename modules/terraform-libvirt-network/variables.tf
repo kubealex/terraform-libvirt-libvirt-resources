@@ -37,7 +37,7 @@ variable "network_bridge" {
 variable "network_mtu" {
   description = "MTU size for the libvirt network"
   type        = number
-  default     = null
+  default     = 1500
 }
 
 variable "network_dns_enabled" {
@@ -94,4 +94,10 @@ variable "network_dns_srv_records" {
     weight   = number      # Changed from string to number
   }))
   default = []
+}
+
+variable "network_dnsmasq_options" {
+  type        = list(string)
+  description = "List of dnsmasq options. Each element can be 'value' or 'key=value'"
+  default     = []
 }
