@@ -1,119 +1,212 @@
 # Instantiate VM with cloud image
 resource "libvirt_volume" "os_image" {
-  count = var.instance_cloud_image != "" ? var.instance_count : 0
-  name = "${var.instance_hostname}-${count.index}-os_image"
-  pool = var.instance_libvirt_pool
-  source = var.instance_cloud_image
-  format = "qcow2"
+  count    = var.instance_cloud_image != "" ? var.instance_count : 0
+  name     = "${var.instance_hostname}-${count.index}-os_image"
+  pool     = var.instance_libvirt_pool
+  format   = "qcow2"
+
+  create = {
+    content = {
+      url = var.instance_cloud_image
+    }
+  }
 }
 
 resource "libvirt_volume" "os_disk" {
-  count = var.instance_count
-  name = "${var.instance_hostname}-${count.index}"
-  base_volume_id = var.instance_cloud_image != "" ? element(libvirt_volume.os_image.*.id, count.index) : ""
-  pool = var.instance_libvirt_pool
-  size = var.instance_volume_size*1073741824
+  count    = var.instance_count
+  name     = "${var.instance_hostname}-${count.index}"
+  pool     = var.instance_libvirt_pool
+  capacity = var.instance_volume_size * 1073741824
+
+  dynamic "backing_store" {
+    for_each = var.instance_cloud_image != "" ? [1] : []
+    content {
+      path = libvirt_volume.os_image[count.index].path
+      format {
+        type = "qcow2"
+      }
+    }
+  }
 }
 
-# Use CloudInit ISO to add customizations to the instance
+# Generate CloudInit disk
 resource "libvirt_cloudinit_disk" "commoninit" {
-  count = var.instance_cloud_image != "" && var.instance_type == "linux" ? var.instance_count : 0
-  name = "${var.instance_hostname}-${count.index}-commoninit.iso"
-  pool = var.instance_libvirt_pool
-  user_data = element(data.template_file.user_data.*.rendered, count.index)
-  #meta_data = data.template_file.meta_data.rendered
+  count     = var.instance_cloud_image != "" && var.instance_type == "linux" ? var.instance_count : 0
+  name      = "${var.instance_hostname}-${count.index}-commoninit"
+  user_data = templatefile(var.instance_cloudinit_path, {
+    instance_hostname   = var.instance_count > 1 ? "${var.instance_hostname}-${count.index}.${var.instance_domain}" : "${var.instance_hostname}.${var.instance_domain}"
+    instance_fqdn       = var.instance_count > 1 ? "${var.instance_hostname}-${count.index}.${var.instance_domain}" : "${var.instance_hostname}.${var.instance_domain}"
+    cloud_user_sshkey   = var.instance_cloud_user.sshkey != null ? var.instance_cloud_user.sshkey : ""
+    cloud_user_username = var.instance_cloud_user.username
+    cloud_user_password = var.instance_cloud_user.password
+  })
+  meta_data = yamlencode({
+    instance-id    = var.instance_count > 1 ? "${var.instance_hostname}-${count.index}" : var.instance_hostname
+    local-hostname = var.instance_count > 1 ? "${var.instance_hostname}-${count.index}" : var.instance_hostname
+  })
+}
+
+# Upload CloudInit ISO to libvirt volume
+resource "libvirt_volume" "cloudinit_volume" {
+  count  = var.instance_cloud_image != "" && var.instance_type == "linux" ? var.instance_count : 0
+  name   = "${var.instance_hostname}-${count.index}-cloudinit.iso"
+  pool   = var.instance_libvirt_pool
+  format = "raw"
+
+  create = {
+    content = {
+      url = libvirt_cloudinit_disk.commoninit[count.index].path
+    }
+  }
 }
 
 resource "libvirt_volume" "storage_image" {
-  count = var.instance_additional_volume_size != 0 ? var.instance_count : 0
-  name = "${var.instance_hostname}-storage_image-${count.index}"
-  pool = var.instance_libvirt_pool
-  size = var.instance_additional_volume_size*1073741824
-  format = "qcow2"
-}
+  count    = var.instance_additional_volume_size != 0 ? var.instance_count : 0
+  name     = "${var.instance_hostname}-storage_image-${count.index}"
+  pool     = var.instance_libvirt_pool
+  capacity = var.instance_additional_volume_size * 1073741824
 
-data "template_file" "user_data" {
-  count = var.instance_count
-  template = file(var.instance_cloudinit_path)
-  vars = {
-    instance_hostname = var.instance_count > 1 ? "${var.instance_hostname}-${count.index}.${var.instance_domain}" : "${var.instance_hostname}.${var.instance_domain}"
-    instance_fqdn = var.instance_count > 1 ? "${var.instance_hostname}-${count.index}.${var.instance_domain}" : "${var.instance_hostname}.${var.instance_domain}"
-    cloud_user_sshkey = var.instance_cloud_user.sshkey != null ? var.instance_cloud_user.sshkey : ""
-    cloud_user_username = var.instance_cloud_user.username
-    cloud_user_password = var.instance_cloud_user.password
+  target {
+    format {
+      type = "qcow2"
+    }
   }
 }
 
 resource "libvirt_domain" "service-vm" {
-  count = var.instance_count
+  count     = var.instance_count
   autostart = var.instance_autostart
-  name = var.instance_count > 1 ? "${var.instance_hostname}-${count.index}" : var.instance_hostname
-  memory = var.instance_memory*1024
-  vcpu = var.instance_cpu
-  machine = var.instance_uefi_enabled ? "q35" : ""
-  firmware = var.instance_uefi_enabled ? var.instance_firmware : ""
+  name      = var.instance_count > 1 ? "${var.instance_hostname}-${count.index}" : var.instance_hostname
+  memory    = var.instance_memory * 1024
+  vcpu      = var.instance_cpu
+  type      = "kvm"
+  running   = true
 
-  boot_device {
-    dev = [ "hd", "cdrom", "network" ]
+  os = {
+    type         = "hvm"
+    type_arch    = "x86_64"
+    type_machine = var.instance_uefi_enabled ? "q35" : null
+    firmware     = var.instance_uefi_enabled ? "efi" : null
+    loader       = var.instance_uefi_enabled ? var.instance_firmware : null
+    loader_readonly = var.instance_uefi_enabled ? true : null
+    loader_type  = var.instance_uefi_enabled ? "pflash" : null
+    boot_devices = ["hd", "cdrom", "network"]
   }
 
-  cpu {
+  cpu = {
     mode = "host-passthrough"
   }
 
-  disk {
-     volume_id = element(libvirt_volume.os_disk.*.id, count.index)
-  }
+  devices = {
+    disks = concat(
+      # OS Disk
+      [{
+        source = {
+          file = {
+            file = libvirt_volume.os_disk[count.index].path
+          }
+        }
+        target = {
+          dev = var.instance_type == "windows" ? "sda" : "vda"
+          bus = var.instance_type == "windows" ? "sata" : "virtio"
+        }
+        driver = var.instance_type == "windows" ? {
+          name    = "qemu"
+          type    = "qcow2"
+          discard = "unmap"
+        } : null
+      }],
+      # CloudInit ISO (if Linux)
+      var.instance_cloud_image != "" && var.instance_type == "linux" ? [{
+        source = {
+          file = {
+            file = libvirt_volume.cloudinit_volume[count.index].path
+          }
+        }
+        target = {
+          dev = "sdb"
+          bus = "sata"
+        }
+        device = "cdrom"
+      }] : [],
+      # ISO Image (if provided)
+      var.instance_iso_image != "" ? [{
+        source = {
+          file = {
+            file = var.instance_iso_image
+          }
+        }
+        target = {
+          dev = var.instance_type == "linux" ? "sdb" : "sdc"
+          bus = "sata"
+        }
+        device = "cdrom"
+      }] : [],
+      # Additional storage volume
+      var.instance_additional_volume_size != 0 ? [{
+        source = {
+          file = {
+            file = libvirt_volume.storage_image[count.index].path
+          }
+        }
+        target = {
+          dev = var.instance_type == "windows" ? "sdb" : "vdb"
+          bus = var.instance_type == "windows" ? "sata" : "virtio"
+        }
+      }] : []
+    )
 
-  dynamic disk {
-    for_each = var.instance_iso_image != "" ? { iso = true } : {}
-    content {
-      file = var.instance_iso_image
-    }
-  }
+    interfaces = [
+      for idx, iface in var.instance_network_interfaces : {
+        source = {
+          network = {
+            network = iface.interface_network
+          }
+        }
+        model = {
+          type = "virtio"
+        }
+        mac = iface.interface_mac_address != null ? {
+          address = iface.interface_mac_address
+        } : null
+        # Note: hostname, addresses, and wait_for_lease are not directly supported in the new schema
+        # These would need to be handled via DHCP configuration in the network or cloud-init
+      }
+    ]
 
-  dynamic "disk" {
-     for_each = var.instance_additional_volume_size != 0 ? { storage = true } : {}
-     content {
-     volume_id = libvirt_volume.storage_image[count.index].id
-     }
-   }
+    consoles = [{
+      target = {
+        type = "serial"
+        port = 0
+      }
+      source = {
+        pty = {
+          path = ""
+        }
+      }
+    }]
 
-  dynamic "network_interface" {
-    for_each = var.instance_network_interfaces
-     content {
-       network_name = network_interface.value.interface_network
-       hostname = network_interface.value.interface_hostname
-       addresses = network_interface.value.interface_addresses
-       mac = network_interface.value.interface_mac_address
-       wait_for_lease = network_interface.value.interface_wait_for_lease
-     }
-  }
+    graphics = [{
+      vnc = {
+        autoport = "yes"
+        listen = {
+          type    = "address"
+          address = "0.0.0.0"
+        }
+      }
+    }]
 
-  cloudinit = var.instance_cloud_image != "" && var.instance_type == "linux" ? element(libvirt_cloudinit_disk.commoninit.*.id, count.index) : null
-
-  console {
-    type        = "pty"
-    target_port = "0"
-    target_type = "serial"
-  }
-
-  graphics {
-    type = "vnc"
-    listen_type = "address"
-    autoport = "true"
+    # Add tablet input for Windows to fix mouse issues
+    inputs = var.instance_type == "windows" ? [{
+      type = "tablet"
+      bus  = "usb"
+    }] : []
   }
 
   # necessary when using UEFI
   lifecycle {
     ignore_changes = [
-      nvram
+      os[0].nv_ram
     ]
   }
-
-  xml {
-    xslt = var.instance_type == "windows" ? file("${path.module}/windows-patch.xsl") : file("${path.module}/linux-patch.xsl")
-  }
-
 }
-
