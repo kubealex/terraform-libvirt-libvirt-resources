@@ -1,120 +1,124 @@
 variable "instance_count" {
-  type = number
-  default = 1
+  type        = number
+  default     = 1
   description = "Number of instances to create"
 }
 
 variable "instance_autostart" {
-  type = bool
+  type        = bool
   description = "Flag to configure autostart for the instance"
-  default = true
+  default     = true
 }
 
 variable "instance_cloud_image" {
-  type = string
-  description = "Cloud image to use for instance provisioning"
-  default = ""
+  type        = string
+  description = "Cloud image URL to use for instance provisioning (HTTP/HTTPS URL supported)"
+  default     = ""
 }
 
 variable "instance_iso_image" {
-  type = string
-  description = "ISO to use for instance provisioning"
-  default = ""
+  type        = string
+  description = "ISO file path to use for instance provisioning"
+  default     = ""
 }
 
 variable "instance_additional_volume_size" {
-  type = number
-  description = "Additional block device size"
-  default = 0
+  type        = number
+  description = "Additional block device size in GB"
+  default     = 0
 }
 
 variable "instance_cloudinit_path" {
-  type = string
-  description = "cloud-init config to use for instance provisioning"
-  default = "./cloud_init.cfg"
+  type        = string
+  description = "Path to cloud-init config template to use for instance provisioning"
+  default     = "./cloud_init.cfg"
 }
 
 variable "instance_type" {
-  type = string
-  description = "Instance type, Windows/Linux"
-  default = "linux"
+  type        = string
+  description = "Instance type: 'windows' or 'linux' (affects disk bus type)"
+  default     = "linux"
+  validation {
+    condition     = contains(["windows", "linux"], var.instance_type)
+    error_message = "Instance type must be either 'windows' or 'linux'."
+  }
 }
 
 variable "instance_hostname" {
-  type = string
-  default = "service-vm"
-  description = "Hostname to assign the istance via cloud-init"
+  type        = string
+  default     = "libvirt-vm"
+  description = "Hostname to assign the instance via cloud-init"
 }
 
 variable "instance_domain" {
-  type = string
-  default = "example.com"
-  description = "Hostname to assign the istance via cloud-init"
+  type        = string
+  default     = "example.com"
+  description = "Domain name to append to hostname"
 }
 
 variable "instance_cpu" {
-  type = number
-  default = 2
-  description = "Number of CPUs to configure for the instance"
+  type        = number
+  default     = 2
+  description = "Number of vCPUs to configure for the instance"
 }
 
 variable "instance_memory" {
-  type = number
-  default = 4
-  description = "Instance memory size, in GB"
+  type        = number
+  default     = 4
+  description = "Instance memory size in GB"
 }
 
 variable "instance_volume_size" {
-  type = number
-  default = 20
-  description = "Instance memory size, in GB"
+  type        = number
+  default     = 20
+  description = "Instance OS volume size in GB"
 }
 
 variable "instance_cloud_user" {
   type = object({
     username = string
     password = string
-    sshkey = optional(string)
+    sshkey   = optional(string)
   })
 
   default = {
     username = "sysadmin"
     password = "redhat"
-    sshkey = ""
+    sshkey   = ""
   }
+  description = "Cloud-init user configuration"
 }
 
 variable "instance_libvirt_pool" {
-  type = string
-  description = "The libvirt pool to attach the instance to"
-  default = "default"
+  type        = string
+  description = "The libvirt pool to attach the instance volumes to"
+  default     = "default"
 }
 
 variable "instance_uefi_enabled" {
-  type = bool
-  default = true
-  description = "Set this to true if OS should be installed via ISO"
+  type        = bool
+  default     = true
+  description = "Enable UEFI firmware for the instance"
 }
 
-
 variable "instance_firmware" {
-  type = string
-  default = "/usr/share/edk2/ovmf/OVMF_CODE.fd"
-  description = "Path to the ovmf firmware on the host machine. Ubuntu=/usr/share/OVMF/OVMF_CODE.fd"
+  type        = string
+  default     = "/usr/share/edk2/ovmf/OVMF_CODE.fd"
+  description = "Path to the OVMF firmware on the host machine. Ubuntu=/usr/share/OVMF/OVMF_CODE.fd"
 }
 
 variable "instance_network_interfaces" {
   type = list(object({
-    interface_network = string
-    interface_mac_address = optional(string)
-    interface_addresses = optional(list(string), [])
-    interface_hostname = optional(string)
+    interface_network       = string
+    interface_mac_address   = optional(string)
+    # Note: The following attributes are not directly supported in v0.9+ devices.interfaces
+    # They would need to be configured via network DHCP or handled differently
+    interface_addresses     = optional(list(string), [])
+    interface_hostname      = optional(string)
     interface_wait_for_lease = optional(bool, true)
-  })
-  )
+  }))
   default = [{
     interface_network = "default"
-    }
-  ]
+  }]
   description = "A list of network interfaces to add to the instance"
 }

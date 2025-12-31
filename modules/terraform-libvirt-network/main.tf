@@ -1,92 +1,81 @@
 resource "libvirt_network" "vm_network" {
   autostart = var.network_autostart
-  name = var.network_name
-  mode = var.network_mode
-  domain = var.network_domain
-  addresses = var.network_cidr
-  bridge = var.network_bridge
-  mtu = var.network_mtu
+  name      = var.network_name
 
-  dns {
-    enabled = var.network_dns_enabled
-    local_only = var.network_dns_local
+  // Waiting on support from upstream
+  # dnsmasq_options = var.network_dnsmasq_options
 
-    dynamic "hosts" {
-      for_each = concat(
-        data.libvirt_network_dns_host_template.hosts.*.rendered
-      )
-      content {
-        hostname = hosts.value.hostname
-        ip       = hosts.value.ip
-      }
+  domain = {
+    name       = var.network_domain
+    local_only = var.network_dns_local ? "yes" : "no"
+  }
+
+  forward = {
+    mode = var.network_mode
+  }
+
+  bridge = {
+    name = var.network_bridge
+  }
+
+  mtu = {
+    size = var.network_mtu
+  }
+
+  ips = [
+    for cidr in var.network_cidr : {
+      address = split("/", cidr)[0]
+      prefix  = tonumber(split("/", cidr)[1])
+      dhcp = var.network_dhcp_enabled ? {
+        ranges = (var.network_dhcp_range_start != null && var.network_dhcp_range_end != null) ? [
+          {
+            start = var.network_dhcp_range_start
+            end   = var.network_dhcp_range_end
+          }
+        ] : null
+      } : null
     }
+  ]
 
-    dynamic "srvs" {
-      for_each = data.libvirt_network_dns_srv_template.srv_records.*.rendered
-      content {
-        service  = srvs.value["service"]
-        protocol = srvs.value["protocol"]
-        domain   = srvs.value["domain"]
-        target   = srvs.value["target"]
-        port     = srvs.value["port"]
-        priority = srvs.value["priority"]
-        weight   = srvs.value["weight"]
+  dns = {
+    enable = var.network_dns_enabled ? "yes" : "no"
+
+    # Host entries (Attributes List)
+    host = [
+      for hostname, ip in var.network_dns_entries : {
+        ip = ip
+        hostnames = [
+          { hostname = hostname }
+        ]
       }
-    }
-  }
+    ]
 
-  dhcp {
-    enabled = var.network_dhcp_enabled
-  }
-
-  dnsmasq_options {
-    dynamic "options" {
-      for_each = concat(
-        data.libvirt_network_dnsmasq_options_template.options.*.rendered,
-      )
-      content {
-        option_name  = options.value.option_name
-        option_value = options.value.option_value
+    sr_vs = [
+      for record in var.network_dns_srv_records : {
+        service  = record.service
+        protocol = record.protocol
+        domain   = record.domain
+        target   = record.target
+        port     = record.port
+        priority = record.priority
+        weight   = record.weight
       }
-    }
+    ]
+
+    forward_plain_names = null
+    forwarders          = null
+    tx_ts               = null
   }
 
-  dynamic "routes" {
-      for_each = var.network_routes
-      content {
-        cidr  = routes.key
-        gateway = routes.value
+  routes = length(var.network_routes) > 0 ? [
+      for cidr, gateway in var.network_routes : {
+        address = split("/", cidr)[0]
+        prefix  = tonumber(split("/", cidr)[1])
+        gateway = gateway
+        family  = null
+        metric  = null
+        netmask = null
       }
-  }
+    ] : null
 
-  xml {
-    xslt = var.network_dhcp_range_start != null && var.network_dhcp_range_start != null ? templatefile("${path.module}/templates/dhcp-range-patch.xslt", {
-        network_dhcp_range_start = var.network_dhcp_range_start
-        network_dhcp_range_end   = var.network_dhcp_range_end
-      }) : null
-  }
-}
-
-data "libvirt_network_dnsmasq_options_template" "options" {
-    count = length(var.network_dnsmasq_options)
-    option_name = keys(var.network_dnsmasq_options)[count.index]
-    option_value = values(var.network_dnsmasq_options)[count.index]
-}
-
-data "libvirt_network_dns_host_template" "hosts" {
-    count = length(var.network_dns_entries)
-    hostname = keys(var.network_dns_entries)[count.index]
-    ip = values(var.network_dns_entries)[count.index]
-}
-
-data "libvirt_network_dns_srv_template" "srv_records" {
-  count    = length(var.network_dns_srv_records)
-
-  service  = var.network_dns_srv_records[count.index].service
-  protocol = var.network_dns_srv_records[count.index].protocol
-  domain   = var.network_dns_srv_records[count.index].domain
-  target   = var.network_dns_srv_records[count.index].target
-  port     = var.network_dns_srv_records[count.index].port
-  priority = var.network_dns_srv_records[count.index].priority
-  weight   = var.network_dns_srv_records[count.index].weight
 }
