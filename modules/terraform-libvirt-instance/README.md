@@ -39,7 +39,8 @@ This Terraform module provisions virtual instances with customizable configurati
 | ---------------------------- | -------------------------------------------------- | -------- | ------------- |
 | `interface_network`             | Name of the network to attach the interface to                      | ✔️       |               |
 | `interface_mac_address`     | MAC address of the network interface               | ❌       |               |
-| `interface_addresses`       | List of IP addresses for the network interface    | ❌       | `[]` (empty list) |
+| `interface_address`       | List of IP addresses for the network interface    | ❌       | `` (empty list) |
+| `interface_prefix`        | Prefix of the interface address for the network interface                | ❌       |       24        |
 | `interface_hostname`        | Hostname for the network interface                | ❌       |               |
 | `interface_wait_for_lease`  | Whether to wait for DHCP lease on the interface   | ❌       | `false`       |
 
@@ -74,14 +75,16 @@ module "instance_provisioning" {
     {
       interface_network_name    = "default"
       interface_mac_address     = "52:54:00:12:34:56"
-      interface_addresses       = ["192.168.1.2"]
+      interface_address         = "192.168.1.2"
+      interface_prefix          = 24
       interface_hostname        = "eth0-host"
       interface_wait_for_lease  = true
     },
     {
       interface_network_name    = "default"
       interface_mac_address     = "52:54:00:65:78:9A"
-      interface_addresses       = ["192.168.2.2"]
+      interface_address         = "192.168.2.2"
+      interface_prefix          = 16
       interface_hostname        = "eth1-host"
       interface_wait_for_lease  = false
     },

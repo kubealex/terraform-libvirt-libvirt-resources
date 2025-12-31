@@ -109,16 +109,13 @@ variable "instance_firmware" {
 
 variable "instance_network_interfaces" {
   type = list(object({
-    interface_network       = string
-    interface_mac_address   = optional(string)
-    # Note: The following attributes are not directly supported in v0.9+ devices.interfaces
-    # They would need to be configured via network DHCP or handled differently
-    interface_addresses     = optional(list(string), [])
-    interface_hostname      = optional(string)
-    interface_wait_for_lease = optional(bool, true)
+    interface_network     = string
+    interface_mac_address = optional(string)
+    interface_address     = optional(string)
+    interface_prefix      = optional(number, 24)
   }))
   default = [{
     interface_network = "default"
   }]
-  description = "A list of network interfaces to add to the instance"
+  description = "A list of network interfaces to add to the instance. Uses DHCP by default, or specify interface_address for static IP assignment. interface_prefix defaults to 24."
 }

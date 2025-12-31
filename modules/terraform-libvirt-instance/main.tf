@@ -139,6 +139,12 @@ resource "libvirt_domain" "libvirt-vm" {
       source = { network = { network = iface.interface_network } }
       model  = { type = "virtio" }
       mac    = iface.interface_mac_address != null ? { address = iface.interface_mac_address } : null
+
+      # Only configure static IP if user specified one, otherwise use DHCP
+      ip = iface.interface_address != null ? [{
+        address = iface.interface_address
+        prefix  = iface.interface_prefix
+      }] : null
     }]
 
     graphics = [
