@@ -58,7 +58,7 @@ resource "libvirt_volume" "storage_image" {
 # 6. Virtual Machine Definition
 resource "libvirt_domain" "libvirt-vm" {
   count     = var.instance_count
-  name      = var.instance_count > 1 ? "${var.instance_hostname}-${count.index}" : var.instance_hostname
+  name      = var.instance_count > 1 ? "${var.instance_hostname}-${count.index}.${var.instance_domain}" : "${var.instance_hostname}.${var.instance_domain}"
   vcpu      = var.instance_cpu
   memory    = var.instance_memory * 1024
   memory_unit   = "MiB"
